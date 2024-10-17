@@ -107,9 +107,6 @@ Example `curl` command:
 
 ### 3. Generate write-only SAS URL
 
-```markdown
-### 3. Generate write-only SAS URL
-
 **Description**: Generates a temporary SAS URL to upload (write) a file to Azure Blob Storage.
 
 - **URL**: `/api/sas/write`
