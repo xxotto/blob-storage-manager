@@ -1,4 +1,4 @@
 downloads/
 .env
-node_modules/
-downloads/
+node_modules
+downloads
