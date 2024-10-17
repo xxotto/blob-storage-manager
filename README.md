@@ -20,7 +20,7 @@ To deploy the API, follow these steps:
    In the root directory of the project, create a `.env` file and add your Azure Blob Storage connection string as follows:
     
    ```bash
-   node app.js
+   docker-compose up --build -d
    ```
 
 The application will launch and listen for requests on the configured port.
