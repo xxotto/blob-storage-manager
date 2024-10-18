@@ -17,7 +17,7 @@ To deploy the API, follow these steps:
 
 
 2. **Start the Application**  
-   In the root directory of the project, create a `.env` file and add your Azure Blob Storage connection string as follows:
+   Run:
     
    ```bash
    docker-compose up --build -d

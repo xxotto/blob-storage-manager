@@ -15,6 +15,7 @@ if (!fs.existsSync(downloadDir)) {
 
 app.use(express.json());
 app.use('/api', fileRoutes);
+app.use('/downloads', express.static(path.join(__dirname, 'downloads')));
 
 const port = config.port;
 app.listen(port, () => {
