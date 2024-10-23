@@ -1,14 +1,53 @@
 const { BlobServiceClient, StorageSharedKeyCredential, generateBlobSASQueryParameters, BlobSASPermissions } = require('@azure/storage-blob');
 const config = require('../config/config');
-const { v4: uuidv4 } = require('uuid');
 const dayjs = require('dayjs');
 const fs = require('fs');
 const path = require('path');
+const ffmpeg = require('fluent-ffmpeg');
+const { logger } = require('../utils/logger');
+
+exports.convertToPcm = async (inputFilePath, outputFileName) => {
+  return new Promise((resolve, reject) => {
+    const outputFilePath = path.resolve(config.downloadDirectory, outputFileName);
+
+    ffmpeg(inputFilePath)
+      .audioChannels(1) 
+      .audioFrequency(8000)
+      .audioCodec('pcm_mulaw')
+      .toFormat('wav')
+      .on('end', () => {
+        logger.info(`Archivo convertido: ${outputFilePath}`);
+        resolve(outputFilePath);
+      })
+      .on('error', (err) => {
+        logger.error('Error durante la conversión:', err);
+        reject(err);
+      })
+      .save(outputFilePath);
+  });
+};
+
+exports.uploadFile = async (containerName, blobName, filePath) => {
+  const blobServiceClient = BlobServiceClient.fromConnectionString(config.azureConnectionString);
+  const containerClient = blobServiceClient.getContainerClient(containerName);
+  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+  try {
+    const data = fs.readFileSync(filePath);
+    await blockBlobClient.upload(data, data.length, {
+      blobHTTPHeaders: { blobContentType: "audio/wav" }
+    });
+    logger.info(`Archivo subido exitosamente: ${blobName}`);
+  } catch (error) {
+    logger.error('Error al subir archivo:', error);
+    throw error;
+  }
+};
 
 exports.downloadFile = async (containerName, fileName) => {
   try {
-    console.log("Container Name:", containerName);
-    console.log("File Name:", fileName);
+    // logger.info(`Container Name: ${containerName}`);
+    // logger.info(`File Name: ${fileName}`);
 
     const blobServiceClient = BlobServiceClient.fromConnectionString(config.azureConnectionString);
     const containerClient = blobServiceClient.getContainerClient(containerName);
@@ -20,7 +59,7 @@ exports.downloadFile = async (containerName, fileName) => {
 
     if (!fs.existsSync(dirPath)) {
       fs.mkdirSync(dirPath, { recursive: true });
-      console.log(`Created directory: ${dirPath}`);
+      logger.info(`Created directory: ${dirPath}`);
     }
 
     const writableStream = fs.createWriteStream(filePath, { flags: 'w' });  // Overwrite if file exists
@@ -31,10 +70,10 @@ exports.downloadFile = async (containerName, fileName) => {
       writableStream.on('error', reject);
     });
 
-    console.log(`File ${fileName} downloaded to ${filePath}`);
+    logger.info(`File ${fileName} downloaded to ${filePath}`);
     return filePath;
   } catch (error) {
-    console.error('Error downloading file:', error);
+    logger.error('Error downloading file:', error);
     throw error;
   }
 };
@@ -65,7 +104,7 @@ exports.generateReadSasUrl = async (containerName, fileName) => {
     const sasToken = generateBlobSASQueryParameters(sasOptions, sharedKeyCredential).toString();
     return { exists: true, sasUrl: `${blobClient.url}?${sasToken}` };  // Retorna el SAS URL si el archivo existe
   } catch (error) {
-    console.error('Error generating read SAS URL:', error);
+    logger.error('Error generating read SAS URL:', error);
     throw error;
   }
 };
@@ -89,7 +128,7 @@ exports.generateWriteSasUrl = async (containerName, fileName) => {
     const sasToken = generateBlobSASQueryParameters(sasOptions, sharedKeyCredential).toString();
     return { exists: true, sasUrl: `${blobClient.url}?${sasToken}` };  // No se verifica la existencia para la escritura
   } catch (error) {
-    console.error('Error generating write SAS URL:', error);
+    logger.error('Error generating write SAS URL:', error);
     throw error;
   }
 };

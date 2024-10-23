@@ -3,6 +3,7 @@ const fileRoutes = require('./routes/fileRoutes');
 const fs = require('fs');
 const path = require('path');
 const config = require('./config/config');
+const { logger } = require('./utils/logger');
 
 const app = express();
 
@@ -10,7 +11,7 @@ const downloadDir = path.resolve(__dirname, 'downloads');
 
 if (!fs.existsSync(downloadDir)) {
   fs.mkdirSync(downloadDir);
-  console.log(`Created "downloads" directory at ${downloadDir}`);
+  logger.info(`Created "downloads" directory at ${downloadDir}`);
 }
 
 app.use(express.json());

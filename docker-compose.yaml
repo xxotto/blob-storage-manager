@@ -12,3 +12,4 @@ services:
     container_name: blob-storage-app
     volumes:
       - ./downloads:/usr/src/app/downloads
+      - ./logs:/usr/src/app/logs
