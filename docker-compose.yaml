@@ -2,14 +2,20 @@ version: '3.8'
 
 services:
   app:
-    image: blob-storage-manager
+    image: blob-storage-manager-img
+    container_name: blob-storage-manager
     build: .
     ports:
       - "7999:7999"
     env_file:
       - .env
     restart: always
-    container_name: blob-storage-app
     volumes:
       - ./downloads:/usr/src/app/downloads
-      - ./logs:/usr/src/app/logs
+    networks:
+      - vgw-network
+
+networks:
+  vgw-network:
+    name: vgw-network
+    driver: bridge

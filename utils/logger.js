@@ -1,5 +1,4 @@
 const winston = require('winston');
-const path = require('path');
 
 const customLevels = {
   levels: {
@@ -21,8 +20,7 @@ const logger = winston.createLogger({
     })
   ),
   transports: [
-    new winston.transports.File({
-      filename: 'logs/messages.log',
+    new winston.transports.Console({
       level: 'debug',
     }),
   ],
